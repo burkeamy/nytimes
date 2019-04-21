@@ -1,0 +1,9 @@
+body {
+    background-image: url(../images/motherboard.jpg);  
+}
+
+.textArea{
+    background-color: antiquewhite;
+    opacity: .75;
+    padding: 15ps;
+}

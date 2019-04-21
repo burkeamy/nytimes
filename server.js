@@ -1,13 +1,23 @@
 const express = require("express");
+const logger = require("morgan");
 const mongoose = require("mongoose");
 const cheerio = require("cheerio");
 const axios = require("axios");
+
 const PORT =  process.env.PORT || 8080;
+
+const db = require("./models");
 
 const app = express();
 
+//morgan logger to log requests
+app.use(logger("dev"));
+
+//parse json requests
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
+
+//make public folder static
 app.use(express.static("public"));
 
 //set handlebars
@@ -17,45 +27,60 @@ app.engine("handlebars", exhbs({ defaultLayout: "main"}));
 app.set("view engine", "handlebars");
 
 // Connect to the Mongo DB
-mongoose.connect("mongodb://localhost/nytimesArticles", { useNewUrlParser: true });
+mongoose.connect("mongodb://localhost/articles", { useNewUrlParser: true });
 
-
-console.log("grabbing info from nytimes");
+//render index.html handlebars page
+app.get("/",function(req,res){
+    res.redirect("/scrape");
+})
+ 
 
 app.get("/scrape", (req, res) => {
 //make the request with axios
-    axios.get("https://www.nytimes.com/").then(response => {
-
+    axios.get("https://www.theverge.com/tech/").then(response => {
+     
         //setting up cheerio
         const $ = cheerio.load(response.data);
 
         //array of results
-        const results = [];
+        let results = [];
 
     //using cheerio to get parse the results
     //looking for articles
-    $("h2").each((i, element) => {
-        const title = $(element).text();
-        const link = $(element).parents().attr("href");
-    
-        results.push({
-            title: title,
-            link: link
-        })
-        console.log(results);
-    })
+    $("h2.c-entry-box--compact__title").each((element) => {
+              let title = $(element[i]).text();
+        let link = $(element[i]).children("a").attr("href");
 
-    db.Article.create(results)
+            results.push({
+                title: title,
+                link: link
+            })
+        })
+
+        db.Article.create(results)
+            .then(dbArticle => {
+            console.log(dbArticle);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+        res.send(results);
+       
+    })
+    res.redirect("/articles");
+});   
+
+app.get("/articles", (req, res) => {
+    db.Article.find()
         .then(dbArticle => {
-         console.lg(dbArticle);
+        let hbsobj ={articles:dbArticle}
+          res.render('index',hbsobj)
         })
         .catch(err => {
-            console.log(err);
+            res.json(err);
         })
-
-    res.send("Your articles have arrived");
-  });
-});   
+})
 //import routes and give the server access to them.
 //const routes = require("./controllers/nytimesController.js");
 
