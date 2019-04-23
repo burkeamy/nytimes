@@ -1,9 +1,21 @@
+
 <div class = "textArea">    
-    <h1>Verge Tech News</h1>
+    <h1 class = "jumbotron">Verge Tech News</h1>
     <h2>read an article, make a note</h2>
-    <ul>
-    {{#each articles}}
-    <li>{{title}}{{link}}</li>
-    {{/each}}
-    </ul>
+    <div class = "container">
+        <div class = "row">
+            <div class = "col-lg-6">
+                <ul>
+                    {{#each articles}}
+                        <li>{{title}}
+                        <a href = "{{link}}">article link</a> 
+                        <button id="{{_id}}" type="button" class="noteButton btn btn-dark">Note
+                            {{> notes this}}
+                        </button>
+                        </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>

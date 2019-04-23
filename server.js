@@ -47,10 +47,9 @@ app.get("/scrape", (req, res) => {
 
     //using cheerio to get parse the results
     //looking for articles
-    $("h2.c-entry-box--compact__title").each((element) => {
-              let title = $(element[i]).text();
-        let link = $(element[i]).children("a").attr("href");
-
+    $("h2.c-entry-box--compact__title").each((i, element) => {
+        let title = $(element).text();
+        let link = $(element).children("a").attr("href");
             results.push({
                 title: title,
                 link: link
@@ -81,10 +80,20 @@ app.get("/articles", (req, res) => {
             res.json(err);
         })
 })
-//import routes and give the server access to them.
-//const routes = require("./controllers/nytimesController.js");
 
-///app.use(routes);
+app.get("/articles:id", (req, res) => {
+    console.log('THIS ROUTE WAS HIT')
+    console.log('REQ PARAMS ', req.params.id)
+    db.Article.find()
+        .then(dbArticle => {
+        let hbsobj ={articles:dbArticle}
+          res.render('index',hbsobj)
+        })
+        .catch(err => {
+            res.json(err);
+        })
+})
+
 
 //start server
 app.listen(PORT, () => {
